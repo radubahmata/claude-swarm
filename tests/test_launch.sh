@@ -1013,6 +1013,27 @@ JSON
 assert_eq "codex version absent" "" \
     "$(jq -r '.codex_cli_version // empty' "$TMPDIR/codex_no_version.json")"
 
+cat > "$TMPDIR/kimi_pinned.json" <<'JSON'
+{
+  "prompt": "unused",
+  "kimi_cli_version": "0.28.0",
+  "agents": [{"count": 1, "driver": "kimi-cli", "model": "kimi-code/kimi-for-coding"}]
+}
+JSON
+
+assert_eq "kimi version present" "0.28.0" \
+    "$(jq -r '.kimi_cli_version // empty' "$TMPDIR/kimi_pinned.json")"
+
+cat > "$TMPDIR/kimi_no_version.json" <<'JSON'
+{
+  "prompt": "unused",
+  "agents": [{"count": 1, "driver": "kimi-cli", "model": "kimi-code/kimi-for-coding"}]
+}
+JSON
+
+assert_eq "kimi version absent" "" \
+    "$(jq -r '.kimi_cli_version // empty' "$TMPDIR/kimi_no_version.json")"
+
 # ============================================================
 echo ""
 echo "=== 30. Top-level tag inheritance ==="
@@ -1630,6 +1651,14 @@ EOF
 assert_eq "codex-only top-level driver" "codex-cli" \
     "$(compute_swarm_agents "$TMPDIR/csa_codex.json")"
 
+cat > "$TMPDIR/csa_kimi.json" <<'EOF'
+{ "prompt": "p.md",
+  "driver": "kimi-cli",
+  "agents": [{ "count": 1, "model": "kimi-code/kimi-for-coding" }] }
+EOF
+assert_eq "kimi-only top-level driver" "kimi-cli" \
+    "$(compute_swarm_agents "$TMPDIR/csa_kimi.json")"
+
 cat > "$TMPDIR/csa_mixed.json" <<'EOF'
 { "prompt": "p.md",
   "agents": [
@@ -1764,6 +1793,9 @@ assert_eq "build_image forwards CLAUDE_CODE_VERSION build-arg" "1" \
 assert_eq "build_image forwards CODEX_CLI_VERSION build-arg" "1" \
     "$(printf '%s\n' "$_bi_body" \
         | grep -cE -- '--build-arg "CODEX_CLI_VERSION=' || true)"
+assert_eq "build_image forwards KIMI_CLI_VERSION build-arg" "1" \
+    "$(printf '%s\n' "$_bi_body" \
+        | grep -cE -- '--build-arg "KIMI_CLI_VERSION=' || true)"
 
 # ============================================================
 echo ""
