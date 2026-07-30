@@ -139,7 +139,11 @@ create_bare_repo() {
     local label="${1:-bare repo}"
     echo "--- Creating ${label} ---"
     rm_docker_dir "$BARE_REPO"
-    git clone --bare "$REPO_ROOT" "$BARE_REPO"
+    # Local clones hardlink packed objects by default. The bare repo is mounted
+    # through Docker Desktop while the source stays on the host. Keep its
+    # object storage independent so receive-pack does not depend on inodes
+    # shared across the bind-mount boundary.
+    git clone --bare --no-hardlinks "$REPO_ROOT" "$BARE_REPO"
     git -C "$BARE_REPO" branch agent-work HEAD 2>/dev/null || true
     git -C "$BARE_REPO" symbolic-ref HEAD refs/heads/agent-work
     git -C "$BARE_REPO" config core.sharedRepository world

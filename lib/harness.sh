@@ -93,6 +93,9 @@ hlog_pipe() {
     done
 }
 
+# shellcheck disable=SC1091
+source /upstream-clone.sh
+
 # Ship unpushed local commits via a scratch worktree.
 #
 # Fallback for when the in-place `git pull --rebase && git push`
@@ -517,8 +520,7 @@ agent_activity_jq > "$SWARM_JQ_FILTER_FILE"
 export SWARM_JQ_FILTER_FILE
 
 if [ ! -d "/workspace/.git" ]; then
-    hlog "cloning upstream"
-    git clone -q /upstream /workspace
+    swarm_clone_upstream /upstream /workspace hlog hlog_err
     cd /workspace
 
     # Init only submodules whose mirrors were mounted into the
