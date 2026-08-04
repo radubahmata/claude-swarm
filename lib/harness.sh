@@ -827,7 +827,13 @@ while true; do
         fi
     fi
 
-    _session_end_push || true
+    # Do not count an unshippable session as idle/success. The stopped
+    # container is the last durable copy of its local commits, so fail loudly
+    # and leave it available for harvest or manual recovery.
+    if ! _session_end_push; then
+        hlog_err "session-end push failed; exiting with unshipped commits preserved"
+        exit 1
+    fi
 
     if [ "$BEFORE" = "$AFTER" ]; then
         IDLE_COUNT=$((IDLE_COUNT + 1))
