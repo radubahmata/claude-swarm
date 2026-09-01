@@ -225,7 +225,7 @@ agent_docker_env() {
 
 # Resolve auth credentials and emit Docker flags.
 # Args: <api_key> <auth_token> <auth_mode> <base_url>
-# Reads host env: KIMI_API_KEY, KIMI_CODE_HOME
+# Reads host env: KIMI_API_KEY, KIMI_MODEL_API_KEY, KIMI_CODE_HOME
 #
 # Auth modes:
 #   oauth   — Mount the host Kimi data dir (~/.kimi-code) after
@@ -236,7 +236,8 @@ agent_docker_auth() {
     local api_key="$1" _auth_token="$2" auth_mode="$3" base_url="$4"
 
     local label=""
-    local key="${api_key:-${KIMI_API_KEY:-}}"
+    # A host may already export the CLI's own provider variable.
+    local key="${api_key:-${KIMI_MODEL_API_KEY:-${KIMI_API_KEY:-}}}"
     local host_home="${KIMI_CODE_HOME:-${HOME}/.kimi-code}"
 
     # Use --mount instead of -v so Docker errors out (rather than

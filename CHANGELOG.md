@@ -16,7 +16,8 @@
   provider) or `"auth": "oauth"` (read-only mount of the host
   `~/.kimi-code` data dir after `kimi login`; each container copies
   it to a writable location on startup). Auto-detection when both
-  are present.
+  are present. A host `KIMI_MODEL_API_KEY` is accepted directly as
+  the apikey source.
 - **Build: `kimi_cli_version` swarmfile field.** Pins the Kimi
   Code CLI version installed in the agent image, mirroring
   `codex_cli_version`.
