@@ -1,16 +1,28 @@
 # Kimi automatic-auth smoke
 
-Run one read-only shell command that verifies all of these conditions:
+Use `smoke/kimi-e2e/results/kimi-auto-max.md` as the result file. If it
+already exists, make no changes, print `KIMI_AUTO_MAX_ALREADY_RECORDED`, and
+exit.
+
+Otherwise, verify all of these conditions:
 
 - `SWARM_DRIVER` is `kimi-cli`.
-- `SWARM_AUTH_MODE` is `auto`.
+- `SWARM_AUTH_MODE` is `oauth` because OAuth is the only available Kimi
+  credential.
 - `SWARM_EFFORT` and `KIMI_MODEL_THINKING_EFFORT` are `max`.
-- `KIMI_MODEL_API_KEY` is non-empty. Do not print its value.
 - `$HOME/.kimi-code` exists and is writable.
-- `KIMI_MODEL_NAME` is `kimi-for-coding`.
 - `git rev-parse --is-inside-work-tree` prints `true`.
 
-Print `KIMI_AUTO_MAX_OK` only after every check passes. If a check fails,
-report the failed condition and do not print the success marker.
+Create the result file whether the checks pass or fail. Include the status,
+agent ID, driver, auth mode, effort, context, Kimi version, base commit, UTC
+time, and any failed conditions. Do not include credentials or their values.
 
-Do not create, edit, commit, or push files. Exit after reporting the result.
+Stage only the result file and commit it with this exact subject:
+
+```text
+Record Kimi automatic max smoke
+```
+
+Print `KIMI_AUTO_MAX_OK` after committing a passing result. Print
+`KIMI_AUTO_MAX_FAIL` after committing a failing result. Do not modify any
+other file.

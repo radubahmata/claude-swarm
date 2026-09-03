@@ -1,26 +1,23 @@
 # Kimi and Claude E2E smoke
 
-This swarm runs four read-only, one-session agents:
+This swarm runs three agents that verify their environment and commit one
+result file:
 
 | Agent | Driver | Auth | Effort | Context |
 |---|---|---|---|---|
 | 1 | Kimi | OAuth | low | none |
-| 2 | Kimi | API key | high | slim |
-| 3 | Kimi | automatic | max | full |
-| 4 | Claude | automatic | low | slim |
+| 2 | Kimi | automatic OAuth selection | max | full |
+| 3 | Claude | OAuth | low | slim |
 
-The automatic Kimi case expects both credentials so the dashboard should
-label it `auto`. The Claude case accepts an API key, an OAuth token, or both.
-No prompt writes to the repository, and `max_idle: 1` stops each container
-after its first session.
+The two Kimi profiles use the same OAuth login but exercise explicit and
+automatic auth selection, different effort levels, and different context
+modes. Each first session commits a unique result. The next session sees the
+result and makes no changes, so `max_idle: 1` stops the container.
 
 ## Credentials
 
-Log Kimi in on the host so `$HOME/.kimi-code` exists, and export
-`KIMI_API_KEY`. Configure at least one Claude credential by exporting
-`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`.
-
-The swarmfile references `$KIMI_API_KEY`; it does not contain a secret.
+Log Kimi in on the host so `$HOME/.kimi-code` exists. Generate a Claude OAuth
+token with `claude setup-token`, then export `CLAUDE_CODE_OAUTH_TOKEN`.
 
 ## Run
 
@@ -34,13 +31,13 @@ SWARM_CONFIG=smoke/kimi-e2e/swarm.json \
 The launcher clones committed `HEAD`, not the uncommitted working tree.
 Commit this directory on a disposable local branch before running it.
 
-Without the dashboard, wait for all four agents and inspect their output:
+Without the dashboard, wait for all three agents and inspect their output:
 
 ```bash
 SWARM_CONFIG=smoke/kimi-e2e/swarm.json ./launch.sh start
 SWARM_CONFIG=smoke/kimi-e2e/swarm.json ./launch.sh wait
 
-for agent in 1 2 3 4; do
+for agent in 1 2 3; do
   SWARM_CONFIG=smoke/kimi-e2e/swarm.json ./launch.sh logs "$agent"
 done
 
@@ -55,7 +52,7 @@ agent logs from the stopped containers:
 source lib/project.sh
 project=$(swarm_project_id "$(basename "$(git rev-parse --show-toplevel)")")
 
-for agent in 1 2 3 4; do
+for agent in 1 2 3; do
   docker inspect -f '{{.State.ExitCode}}' "${project}-agent-${agent}"
   docker cp "${project}-agent-${agent}:/workspace/agent_logs" - \
     | tar -xOf - --wildcards '*agent_*.log' 2>/dev/null \
@@ -67,9 +64,17 @@ The commands should print exit code `0` and these markers, in order:
 
 ```text
 KIMI_OAUTH_LOW_OK
-KIMI_APIKEY_HIGH_OK
 KIMI_AUTO_MAX_OK
-CLAUDE_AUTO_LOW_OK
+CLAUDE_OAUTH_LOW_OK
+```
+
+After `launch.sh wait` harvests the commits, these files should exist and
+report `PASS`:
+
+```text
+smoke/kimi-e2e/results/kimi-oauth-low.md
+smoke/kimi-e2e/results/kimi-auto-max.md
+smoke/kimi-e2e/results/claude-oauth-low.md
 ```
 
 The Kimi pricing values are intentionally synthetic: one dollar per million

@@ -3,7 +3,7 @@
   "driver": "kimi-cli",
   "max_idle": 1,
   "max_retry_wait": 0,
-  "inject_git_rules": false,
+  "inject_git_rules": true,
   "tag": "kimi-e2e-smoke",
   "pricing": {
     "kimi-code/kimi-for-coding": {
@@ -24,17 +24,6 @@
       "tag": "kimi-oauth-low"
     },
     {
-      "name": "kimi-apikey-high",
-      "count": 1,
-      "model": "kimi-code/kimi-for-coding",
-      "auth": "apikey",
-      "api_key": "$KIMI_API_KEY",
-      "effort": "high",
-      "context": "slim",
-      "prompt": "smoke/kimi-e2e/prompts/kimi-apikey-high.md",
-      "tag": "kimi-apikey-high"
-    },
-    {
       "name": "kimi-auto-max",
       "count": 1,
       "model": "kimi-code/kimi-for-coding",
@@ -44,14 +33,15 @@
       "tag": "kimi-auto-max"
     },
     {
-      "name": "claude-auto-low",
+      "name": "claude-oauth-low",
       "count": 1,
       "driver": "claude-code",
       "model": "claude-sonnet-4-6",
+      "auth": "oauth",
       "effort": "low",
       "context": "slim",
-      "prompt": "smoke/kimi-e2e/prompts/claude-auto-low.md",
-      "tag": "claude-auto-low"
+      "prompt": "smoke/kimi-e2e/prompts/claude-oauth-low.md",
+      "tag": "claude-oauth-low"
     }
   ]
 }
